@@ -1,4 +1,8 @@
 #include "BNO055.h"
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 
 /*
  registers used:
@@ -17,23 +21,22 @@
 // CONSTRUCTORS
 
 // no reset pin
-BNO055(I2C &i2c, uint8_t addr) noexcept
+BNO055::BNO055(I2C &i2c, uint8_t addr) noexcept
     : _i2c(i2c), _res(NC)
 {
-    _i2c_p = &i2C;
+    _i2c_p = &i2c;
     chip_addr = addr;
     cantReadDataCount = 0;
 }
 
 // yes reset pin
-BNO055(I2C &i2c, uint8_t addr, PinName p_reset) noexcept
+BNO055::BNO055(I2C &i2c, uint8_t addr, PinName p_reset) noexcept
     : _i2c(i2c), _res(p_reset)
 {
-    _i2c_p = &i2C;
+    _i2c_p = &i2c;
     chip_addr = addr;
     cantReadDataCount = 0;
 }
-
 
 // HELPER FUNCTIONS
 // write one byte to one register
@@ -41,42 +44,65 @@ BNO055(I2C &i2c, uint8_t addr, PinName p_reset) noexcept
 // aaasduhaugeyrhiughfgbsudhiruegj
 void BNO055::writeRegister(char reg, char value) {
     char data[2] = {reg, value};    // make 2 byte array
-    _i2c.write(chip_addr, data, 2, false);
+    _i2c.write(chip_addr, data, 2, false);  // send 2 bytes to chip: first byte = register, second byte = value
 }
 
 void BNO055::readRegisters(char startReg, char *buf, int length) {
-    char reg[1] = {startReg};                   // make one byte array w/ register we are starting from
+    char reg[1] = {startReg};               // make one byte array w/ register we are starting from
     _i2c.write(chip_addr, reg, 1, true);        // sends one byte which points chip at starting register
     _i2c.read(chip_addr, buf, length, false);   // reads length bytes from chip into buf; chip moves to next register after each byte
 }
 
 // RESET
 void BNO055::reset() noexcept {
-    if(_res.is_connected()) {
-        // if we have a reset pin, pull it down then up
-        _res.write(0);
-        ThisThread::sleep_for(1);
-        _rest.write(1);
-    } else {
-        // if we do not have a reset pin, tell the chip to reset itself
-        writeRegister(BNO055_SYS_TRIGGER, 0x20);
-    }
+    // DigitalOut does not provide is_connected(); use the BNO055 software reset.
+    writeRegister(BNO055_SYS_TRIGGER, 0x20);
 }
 
 
 // CHANGE MODE
+void BNO055::change_fusion_mode(uint8_t mode) {
+    writeRegister(BNO055_OPR_MODE, MODE_CONFIG); // put chip in config mode
+    ThisThread::sleep_for(30ms);                            // wait for mode change to take effect
+    writeRegister(BNO055_OPR_MODE, mode);        // put chip in desired mode
+    ThisThread::sleep_for(30ms);                            // wait for mode change to take effect
 
+}
 
 
 // INIT
+void BNO055::init() noexcept {
+    // check chip ID
+    uint8_t id;
+    readRegisters(BNO055_CHIP_ID, reinterpret_cast<char *>(&id), 1);
+    if (id != 0xA0) {
+        printf("BNO055: Chip ID mismatch. Expected 0xA0, got 0x%02X\n", id);
+        return;
+    }
 
+    // reset chip
+    reset();
+    ThisThread::sleep_for(650ms); // wait for reset to complete
+
+    // set power mode to normal
+    writeRegister(BNO055_PWR_MODE, 0x00);
+    ThisThread::sleep_for(10ms);
+
+    // set fusion mode to NDOF
+    change_fusion_mode(MODE_NDOF);
+}
 
 
 // ACCEL & GYRO
-
+void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
+    readRegisters(BNO055_ACCEL_DATA, (char *)acc, 6);
+}
 
 
 // PITCH, ROLL, YAW
+void BNO055::get_gyro(BNO055_VECTOR_TypeDef *gyro) {
+    readRegisters(BNO055_GYRO_DATA, (char *)gyro, 6);
+}
 
 /*
 We added these two functions since they're definitely beyond what we expect from you as recruits
