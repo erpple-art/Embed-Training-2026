@@ -85,9 +85,26 @@ private:
 
     IMU::EulerAngles imuAngles;
 
+    // added by me
+    void writeRegister(char reg, char value);                    // write one byte to one register
+    void readRegisters(char startReg, char *buf, int legnth);    // read multiple registers in a row
+
 };
 
 // Quaternion data registers
 #define BNO055_QUATERNION_W_LSB 0x20
+
+// added by me - register addresses from the datasheet
+#define BNO055_CHIP_ID     0x00
+#define BNO055_ACCEL_DATA  0x08
+#define BNO055_GYRO_DATA   0x14
+#define BNO055_OPR_MODE    0x3D
+#define BNO055_PWR_MODE    0x3E
+#define BNO055_SYS_TRIGGER 0x3F
+
+// values for opr_mode
+#define MODE_CONFIG        0x00
+#define MODE_ACCGYRO       0x05
+#define MODE_NDOF          0x0C
 
 #endif
