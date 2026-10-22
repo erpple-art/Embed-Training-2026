@@ -1,5 +1,60 @@
 #include "BNO055.h"
 
+/*
+ registers used:
+   0x00 = chip ID
+   0x08 = start of acceleration data
+   0x14 = start of gyro data
+   0x3D = mode
+   0x3E = power mode
+   0x3F = reset
+ 
+ Mode values:
+   0x00 = config mode (settings only)
+   0x0C = 9DOF mode (everything on)
+*/
+
+// CONSTRUCTORS
+
+// no reset pin
+BNO055(I2C &i2c, uint8_t addr) noexcept
+    : _i2c(i2c), _res(NC)
+{
+    _i2c_p = &i2C;
+    chip_addr = addr;
+    cantReadDataCount = 0;
+}
+
+// yes reset pin
+BNO055(I2C &i2c, uint8_t addr, PinName p_reset) noexcept
+    : _i2c(i2c), _res(p_reset)
+{
+    _i2c_p = &i2C;
+    chip_addr = addr;
+    cantReadDataCount = 0;
+}
+
+
+// HELPER FUNCTIONS
+// write one byte to one register
+void BNO055::writeRegister(char reg, char value) {
+    
+}
+
+
+// RESET
+
+
+
+// INIT
+
+
+
+// ACCEL & GYRO
+
+
+
+// PITCH, ROLL, YAW
 
 /*
 We added these two functions since they're definitely beyond what we expect from you as recruits
