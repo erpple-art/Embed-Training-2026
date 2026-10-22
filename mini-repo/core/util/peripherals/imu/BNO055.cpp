@@ -37,12 +37,26 @@ BNO055(I2C &i2c, uint8_t addr, PinName p_reset) noexcept
 
 // HELPER FUNCTIONS
 // write one byte to one register
+// reg = what register, value = what to put in register
+// aaasduhaugeyrhiughfgbsudhiruegj
 void BNO055::writeRegister(char reg, char value) {
-    
+    char data[2] = {reg, value};    // make 2 byte array
+    _i2c.write(chip_addr, data, 2, false);
+}
+
+void BNO055::readRegisters(char startReg, char *buf, int length) {
+    char reg[1] = {startReg};                   // make one byte array w/ register we are starting from
+    _i2c.write(chip_addr, reg, 1, true);        // sends one byte which points chip at starting register
+    _i2c.read(chip_addr, buf, length, false);   // reads length bytes from chip into buf; chip moves to next register after each byte
+}
+
+// RESET
+void BNO055::reset() noexcept {
+
 }
 
 
-// RESET
+// CHANGE MODE
 
 
 
