@@ -52,7 +52,15 @@ void BNO055::readRegisters(char startReg, char *buf, int length) {
 
 // RESET
 void BNO055::reset() noexcept {
-
+    if(_res.is_connected()) {
+        // if we have a reset pin, pull it down then up
+        _res.write(0);
+        ThisThread::sleep_for(1);
+        _rest.write(1);
+    } else {
+        // if we do not have a reset pin, tell the chip to reset itself
+        writeRegister(BNO055_SYS_TRIGGER, 0x20);
+    }
 }
 
 
