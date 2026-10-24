@@ -111,12 +111,10 @@ void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
     acc->z = z / 100.0;
 }
 
-
-// PITCH, ROLL, YAW
 void BNO055::get_gyro(BNO055_VECTOR_TypeDef *gyro) {
     uint8_t buf[6];
 
-    readRegisters(BNO055_GYRO_DATA, (char *)gyro, 6);
+    readRegisters(BNO055_GYRO_DATA, (char *)buf, 6);
 
     int16_t x = (int16_t)((buf[1] << 8) | buf[0]);
     int16_t y = (int16_t)((buf[3] << 8) | buf[2]);
@@ -178,4 +176,17 @@ void BNO055::get_angular_position_quat(IMU::EulerAngles *result){
     memcpy(&result->roll, &roll, sizeof(float));
     memcpy(&result->pitch, &pitch, sizeof(float));
     memcpy(&result->yaw, &yaw, sizeof(float));
+}
+
+//IMU::EulerAngles read() override;
+
+//IMU::EulerAngles getImuAngles() override;
+
+IMU::EulerAngles BNO055::read() {
+    get_angular_position_quat(&imuAngles);
+    return imuAngles;
+}
+
+IMU::EulerAngles BNO055::getImuAngles() {
+    return imuAngles;
 }
