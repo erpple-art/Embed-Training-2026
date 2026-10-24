@@ -1,5 +1,5 @@
 
-#include "DJIMotor.h"
+#include "DJImotor.h"
 
 int DJIMotor::motorCount = 0;
 DJIMotor* DJIMotor::s_allMotors[2][3][4];

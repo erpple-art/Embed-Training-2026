@@ -55,7 +55,6 @@ void BNO055::readRegisters(char startReg, char *buf, int length) {
 
 // RESET
 void BNO055::reset() noexcept {
-    // DigitalOut does not provide is_connected(); use the BNO055 software reset.
     writeRegister(BNO055_SYS_TRIGGER, 0x20);
 }
 
@@ -94,14 +93,38 @@ void BNO055::init() noexcept {
 
 
 // ACCEL & GYRO
+// ACCEL
 void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
-    readRegisters(BNO055_ACCEL_DATA, (char *)acc, 6);
+    uint8_t buf[6];   // 6 bytes: x low, x high, y low, y high, z low, z high
+
+    // read 6 registers in a row, starting at the accel data register
+    readRegisters(BNO055_ACCEL_DATA, (char *)buf, 6);
+
+    // combine high byte and low byte into one 16-bit number
+    int16_t x = (int16_t)((buf[1] << 8) | buf[0]);
+    int16_t y = (int16_t)((buf[3] << 8) | buf[2]);
+    int16_t z = (int16_t)((buf[5] << 8) | buf[4]);
+
+    // convert to m/s^2 (datasheet: 1 m/s^2 = 100 LSB)
+    acc->x = x / 100.0;
+    acc->y = y / 100.0;
+    acc->z = z / 100.0;
 }
 
 
 // PITCH, ROLL, YAW
 void BNO055::get_gyro(BNO055_VECTOR_TypeDef *gyro) {
+    uint8_t buf[6];
+
     readRegisters(BNO055_GYRO_DATA, (char *)gyro, 6);
+
+    int16_t x = (int16_t)((buf[1] << 8) | buf[0]);
+    int16_t y = (int16_t)((buf[3] << 8) | buf[2]);
+    int16_t z = (int16_t)((buf[5] << 8) | buf[4]);
+
+    gyro->x = x / 16.0; // convert to degrees/s (datasheet: 1 deg/s = 16 LSB)
+    gyro->y = y / 16.0;
+    gyro->z = z / 16.0;
 }
 
 /*

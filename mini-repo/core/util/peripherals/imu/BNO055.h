@@ -87,7 +87,7 @@ private:
 
     // added by me
     void writeRegister(char reg, char value);                    // write one byte to one register
-    void readRegisters(char startReg, char *buf, int legnth);    // read multiple registers in a row
+    void readRegisters(char startReg, char *buf, int length);    // read multiple registers in a row
 
 };
 
@@ -98,6 +98,7 @@ private:
 #define BNO055_CHIP_ID     0x00
 #define BNO055_ACCEL_DATA  0x08
 #define BNO055_GYRO_DATA   0x14
+#define I2C_ADDRESS        0x28
 #define BNO055_OPR_MODE    0x3D
 #define BNO055_PWR_MODE    0x3E
 #define BNO055_SYS_TRIGGER 0x3F
