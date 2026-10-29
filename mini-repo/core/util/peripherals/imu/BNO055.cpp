@@ -43,8 +43,8 @@ BNO055::BNO055(I2C &i2c, uint8_t addr, PinName p_reset) noexcept
 // reg = what register, value = what to put in register
 // aaasduhaugeyrhiughfgbsudhiruegj
 void BNO055::writeRegister(char reg, char value) {
-    char data[2] = {reg, value};    // make 2 byte array
-    _i2c.write(chip_addr, data, 2, false);  // send 2 bytes to chip: first byte = register, second byte = value
+    char data[2] = {reg, value};
+    _i2c.write(chip_addr, data, 2, false); 
 }
 
 void BNO055::readRegisters(char startReg, char *buf, int length) {
@@ -62,9 +62,9 @@ void BNO055::reset() noexcept {
 // CHANGE MODE
 void BNO055::change_fusion_mode(uint8_t mode) {
     writeRegister(BNO055_OPR_MODE, MODE_CONFIG); // put chip in config mode
-    ThisThread::sleep_for(30ms);                            // wait for mode change to take effect
+    ThisThread::sleep_for(30ms);                            
     writeRegister(BNO055_OPR_MODE, mode);        // put chip in desired mode
-    ThisThread::sleep_for(30ms);                            // wait for mode change to take effect
+    ThisThread::sleep_for(30ms);                            
 
 }
 
@@ -74,6 +74,7 @@ void BNO055::init() noexcept {
     // check chip ID
     uint8_t id;
     readRegisters(BNO055_CHIP_ID, reinterpret_cast<char *>(&id), 1);
+    // check if chip ID is correct
     if (id != 0xA0) {
         printf("BNO055: Chip ID mismatch. Expected 0xA0, got 0x%02X\n", id);
         return;
@@ -81,7 +82,7 @@ void BNO055::init() noexcept {
 
     // reset chip
     reset();
-    ThisThread::sleep_for(650ms); // wait for reset to complete
+    ThisThread::sleep_for(650ms);
 
     // set power mode to normal
     writeRegister(BNO055_PWR_MODE, 0x00);
@@ -91,19 +92,17 @@ void BNO055::init() noexcept {
     change_fusion_mode(MODE_NDOF);
 }
 
-
-// ACCEL & GYRO
 // ACCEL
 void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
-    uint8_t buf[6];   // 6 bytes: x low, x high, y low, y high, z low, z high
+    uint8_t buf[6];   // x low, x high, y low, y high, z low, z high
 
     // read 6 registers in a row, starting at the accel data register
     readRegisters(BNO055_ACCEL_DATA, (char *)buf, 6);
 
     // combine high byte and low byte into one 16-bit number
-    int16_t x = (int16_t)((buf[1] << 8) | buf[0]);
-    int16_t y = (int16_t)((buf[3] << 8) | buf[2]);
-    int16_t z = (int16_t)((buf[5] << 8) | buf[4]);
+    int16_t x = (int16_t)((buf[1] << 8) | buf[0]);  // i feel like we should stop calling donut holes donut holes
+    int16_t y = (int16_t)((buf[3] << 8) | buf[2]);  // because they're not holes, they're more like plugs
+    int16_t z = (int16_t)((buf[5] << 8) | buf[4]);  // donut plugs
 
     // convert to m/s^2 (datasheet: 1 m/s^2 = 100 LSB)
     acc->x = x / 100.0;
@@ -111,6 +110,7 @@ void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
     acc->z = z / 100.0;
 }
 
+// GYRO
 void BNO055::get_gyro(BNO055_VECTOR_TypeDef *gyro) {
     uint8_t buf[6];
 
@@ -177,10 +177,6 @@ void BNO055::get_angular_position_quat(IMU::EulerAngles *result){
     memcpy(&result->pitch, &pitch, sizeof(float));
     memcpy(&result->yaw, &yaw, sizeof(float));
 }
-
-//IMU::EulerAngles read() override;
-
-//IMU::EulerAngles getImuAngles() override;
 
 IMU::EulerAngles BNO055::read() {
     get_angular_position_quat(&imuAngles);
