@@ -100,9 +100,9 @@ void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
     readRegisters(BNO055_ACCEL_DATA, (char *)buf, 6);
 
     // combine high byte and low byte into one 16-bit number
-    int16_t x = (int16_t)((buf[1] << 8) | buf[0]);  // i feel like we should stop calling donut holes donut holes
-    int16_t y = (int16_t)((buf[3] << 8) | buf[2]);  // because they're not holes, they're more like plugs
-    int16_t z = (int16_t)((buf[5] << 8) | buf[4]);  // donut plugs
+    int16_t x = (int16_t)((buf[1] << 8) | buf[0]);
+    int16_t y = (int16_t)((buf[3] << 8) | buf[2]);
+    int16_t z = (int16_t)((buf[5] << 8) | buf[4]);
 
     // convert to m/s^2 (datasheet: 1 m/s^2 = 100 LSB)
     acc->x = x / 100.0;
@@ -111,6 +111,7 @@ void BNO055::get_accel(BNO055_VECTOR_TypeDef *acc) {
 }
 
 // GYRO
+// i could devour a gyro bowl rn
 void BNO055::get_gyro(BNO055_VECTOR_TypeDef *gyro) {
     uint8_t buf[6];
 
